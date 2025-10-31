@@ -52,6 +52,7 @@ jobs:
 
           # 列出文件以供 Actions UI 查看
           ls -lh ./${TAR_NAME}
+          echo "TAR_NAME=${TAR_NAME}" >> $GITHUB_ENV
         env:
           PLATFORM: ${{ env.PLATFORM }}
           TAG: ${{ env.TAG }}
@@ -63,5 +64,4 @@ jobs:
         with:
           name: armv7-image-tar
           # 与上一步中生成的文件名规则相同
-          path: ./${{ github.repository//"/"/"_" }}-${{ env.TAG }}.tar
-
+          path: ./${{ env.TAR_NAME }}
