@@ -1,0 +1,67 @@
+name: Build ARMv7 and export tar artifact
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  IMAGE_NAME: mrz/moontv
+  TAG: armv7-latest
+  PLATFORM: linux/arm/v7
+  DOCKERFILE: Dockerfile.arm32v7
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-export-tar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Show Docker & Buildx versions
+        run: |
+          docker --version
+          docker buildx version
+
+      - name: Build ARMv7 image and export to tar
+        run: |
+          set -euo pipefail
+          docker buildx create --use --name gh-builder || true
+          docker buildx inspect --bootstrap
+
+          SAFE_NAME="${GITHUB_REPOSITORY//\//_}"
+          TAR_NAME="${SAFE_NAME}-${TAG}.tar"
+          echo "Building platform=${PLATFORM}, image=${IMAGE_NAME}:${TAG}"
+          echo "Output tar will be: ${TAR_NAME}"
+
+          # 执行构建并导出为 tar（当前目录为仓库根）
+          docker buildx build \
+            --platform ${PLATFORM} \
+            --file ${DOCKERFILE} \
+            --tag ${IMAGE_NAME}:${TAG} \
+            --output type=tar,dest=./${TAR_NAME} \
+            .
+
+          # 列出文件以供 Actions UI 查看
+          ls -lh ./${TAR_NAME}
+        env:
+          PLATFORM: ${{ env.PLATFORM }}
+          TAG: ${{ env.TAG }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          DOCKERFILE: ${{ env.DOCKERFILE }}
+
+      - name: Upload tar artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: armv7-image-tar
+          # 与上一步中生成的文件名规则相同
+          path: ./${{ github.repository//"/"/"_" }}-${{ env.TAG }}.tar
+

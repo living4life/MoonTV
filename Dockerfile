@@ -10,6 +10,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # 安装所有依赖（含 devDependencies，后续会裁剪）
+RUN pnpm config set registry https://registry.npmmirror.com
 RUN pnpm install --frozen-lockfile
 
 # ---- 第 2 阶段：构建项目 ----
@@ -32,6 +33,7 @@ ENV DOCKER_ENV=true
 RUN sed -i "/const inter = Inter({ subsets: \['latin'] });/a export const dynamic = 'force-dynamic';" src/app/layout.tsx
 
 # 生成生产构建
+RUN pnpm config set registry https://registry.npmmirror.com
 RUN pnpm run build
 
 # ---- 第 3 阶段：生成运行时镜像 ----
@@ -61,6 +63,5 @@ COPY --from=builder --chown=nextjs:nodejs /app/config.json ./config.json
 USER nextjs
 
 EXPOSE 3000
-
 # 使用自定义启动脚本，先预加载配置再启动服务器
 CMD ["node", "start.js"] 
