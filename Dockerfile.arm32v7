@@ -14,7 +14,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # 使用国内镜像（可按需修改）
-#RUN pnpm config set registry https://registry.npmmirror.com
+RUN pnpm config set registry https://registry.npmmirror.com
 
 # 安装所有依赖（含 devDependencies，后续会在 runtime 阶段被裁剪）
 RUN pnpm install --frozen-lockfile
@@ -44,7 +44,7 @@ ENV DOCKER_ENV=true
 RUN sed -i "/const inter = Inter({ subsets: \['latin'] });/a export const dynamic = 'force-dynamic';" src/app/layout.tsx || true
 
 # 生成生产构建
-#RUN pnpm config set registry https://registry.npmmirror.com
+RUN pnpm config set registry https://registry.npmmirror.com
 RUN pnpm run build
 
 # ---- 第 3 阶段：生成精简运行时镜像 ----
