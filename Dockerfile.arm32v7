@@ -17,7 +17,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm config set registry https://registry.npmmirror.com
 
 # 安装所有依赖（含 devDependencies，后续会在 runtime 阶段被裁剪）
-RUN pnpm install --frozen-lockfile
+RUN pnpm install #--frozen-lockfile
 
 # ---- 第 2 阶段：构建项目（也在 armv7 平台做构建） ----
 FROM --platform=linux/arm/v7 arm32v7/node:20-alpine AS builder
